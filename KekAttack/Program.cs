@@ -23,10 +23,6 @@ namespace KekAttack
                 if (input.Key == ConsoleKey.LeftArrow) CommandQueue.Enqueue(Directions.Left);
 
                 if (CommandQueue.Count > 2) CommandQueue.Dequeue();
-
-                // if (input.Key == ConsoleKey.UpArrow) command = Directions.Up;
-                //if (input.Key == ConsoleKey.RightArrow) command = Directions.Right;
-                // if (input.Key == ConsoleKey.LeftArrow) command = Directions.Left;
             }
         }
 
@@ -185,16 +181,6 @@ namespace KekAttack
             controllerThread.Start();
 
             Player player = new Player(Field, 4, 2);
-            // new Box(Field, Sprites.Box1, 8, 8);
-            // new Box(Field, Sprites.Box1, 9, 3);
-            //new Box(Field, Sprites.Box1, 10, 4);
-
-            // new Box(Field, Sprites.Box1, 12, 3);
-            //new Box(Field, Sprites.Box1, 12, 2);
-
-            //new Box(Field, Sprites.Box1, 3, 2);
-
-            //kekx
 
             GenerateLayout();
 
