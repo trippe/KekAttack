@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static KekAttack.UI;
 
 namespace KekAttack
 {
@@ -23,6 +24,25 @@ namespace KekAttack
                 if (input.Key == ConsoleKey.LeftArrow) CommandQueue.Enqueue(Directions.Left);
 
                 if (CommandQueue.Count > 2) CommandQueue.Dequeue();
+            }
+        }
+
+        private static void DrawUI(Layout ui)
+        {
+            foreach (UIElement elem in ui.Elements)
+            {
+                Console.SetCursorPosition(elem.x, elem.y);
+                Console.Write(elem.text);
+            }
+            Button actb = null;
+            if ((actb = ui.GetActive()) != null)
+            {
+                Console.SetCursorPosition(actb.x, actb.y);
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.BackgroundColor = ConsoleColor.Gray;
+                Console.Write(actb.text);
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.BackgroundColor = ConsoleColor.Black;
             }
         }
 
@@ -174,6 +194,27 @@ namespace KekAttack
             Field = new BaseObject[22, 10];
             CommandQueue = new Queue<Directions>();
 
+            Layout MainMenu = new Layout();
+            MainMenu.Elements.Add(new Label("label  1", 12, 3));
+            MainMenu.Elements.Add(new Label("label  2", 12, 7));
+            MainMenu.CreateButton("button 1", 3, 3, 0, 0, null);
+            MainMenu.CreateButton("button 2", 3, 5, 0, 1, null);
+            MainMenu.CreateButton("button 3", 22, 3, 1, 0, null);
+            MainMenu.CreateButton("button 4", 12, 5, 1, 1, null);
+            MainMenu.CreateButton("button 5", 3, 7, 0, 2, null);
+
+
+
+            //while (true) //main menu cycle
+            //{
+            //    DrawUI(MainMenu);
+            //                    ConsoleKeyInfo input = Console.ReadKey(true);
+            //    if (input.Key == ConsoleKey.UpArrow) MainMenu.ActivateButton(Directions.Up);
+            //    else if (input.Key == ConsoleKey.RightArrow) MainMenu.ActivateButton(Directions.Right);
+            //    else if (input.Key == ConsoleKey.LeftArrow) MainMenu.ActivateButton(Directions.Left);
+            //    else if (input.Key == ConsoleKey.DownArrow) MainMenu.ActivateButton(Directions.Down);
+            //}
+
             CreateFieldBorders();
 
             Thread controllerThread = new Thread(new ThreadStart(Controller));
@@ -184,17 +225,16 @@ namespace KekAttack
 
             GenerateLayout();
 
-
-            while (true)
+            while (true) //main cycle
             {
-                CheckRowCompletion();
-
                 GenerateBox();
                 Update();
                 Draw();
-                
+
                 Thread.Sleep(_frameswindow);
+                CheckRowCompletion();
             }
+
         }
 
         private static bool CheckRowCompletion()
@@ -214,8 +254,9 @@ namespace KekAttack
                 }
             }
 
-            if (result)
+            if (result) //очистка ряда
             {
+                Thread.Sleep(100);
                 for (int i = 1; i < Field.GetLength(0) - 1; i++)
                 {
                     Field[i, Field.GetLength(1) - 2] = null;
@@ -223,16 +264,22 @@ namespace KekAttack
             }
 
             return result;
-
         }
 
         private static void GenerateBox()
         {
             if (boxGenerationCounter == 0)
             {
-                Random rnd = new Random();
-                new Box(Field, rnd.Next(1, Field.GetLength(0) - 1), 1);
-                boxGenerationCounter = _boxGenerationCounterConst;
+                try
+                {
+                    Random rnd = new Random();
+                    new Box(Field, rnd.Next(1, Field.GetLength(0) - 1), 1);
+                    boxGenerationCounter = _boxGenerationCounterConst;
+                }
+                catch (Box.CreateBoxException)
+                {
+                    GameOver();
+                }
             }
             else
             {
@@ -241,6 +288,12 @@ namespace KekAttack
 
 
         }
+
+        private static void GameOver()
+        {
+            throw new NotImplementedException();
+        }
+
 
         private static void GenerateLayout()
         {

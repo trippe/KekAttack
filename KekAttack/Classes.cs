@@ -6,6 +6,117 @@ using System.Threading.Tasks;
 
 namespace KekAttack
 {
+    class UI
+    {
+        public abstract class UIElement
+        {
+            public string text;
+            public int x;
+            public int y;
+        }
+
+        public class Label : UIElement
+        {
+            public Label(string Text, int X, int Y)
+            {
+                text = Text;
+                x = X;
+                y = Y;
+            }
+        }
+
+        public class Button : UIElement
+        {
+            public bool Active = false;
+
+            public int xRelative;
+            public int yRelative;
+
+            public delegate object Action();
+            private Action action;
+
+            public void Highlight()
+            {
+                if (Active == false) Active = true;
+                else Active = false;
+            }
+
+            public Button(string Text, int X, int Y, int XRelative, int YRelative, Action act)
+            {
+                text = Text;
+                x = X;
+                y = Y;
+                xRelative = XRelative;
+                yRelative = YRelative;
+                action = act;
+            }
+        }
+
+        public class Layout
+        {
+            public List<UIElement> Elements = new List<UIElement>();
+
+            private bool HasActiveButton()
+            {
+                if (Elements.Where(x => (x.GetType() == typeof(Button)) && ((x as Button).Active == true)).Count() != 0) return true;
+                else return false;
+            }
+
+            public Button GetActive()
+            {
+                return Elements.FirstOrDefault(x => (x.GetType() == typeof(Button)) && ((x as Button).Active)) as Button;
+            }
+
+            public void CreateButton(string Text, int X, int Y, int XRelative, int YRelative, UI.Button.Action act)
+            {
+                Button button = new Button(Text, X, Y, XRelative, YRelative, act);
+                if (!HasActiveButton()) button.Highlight();
+                Elements.Add(button);
+            }
+
+            public void ActivateButton(Directions direction)
+            {
+                Button cActive = null;
+                Button target = null;
+                if ((cActive = GetActive()) != null)
+                {
+                    switch (direction)
+                    {
+                        case Directions.Left:
+                            target = (Elements.Where(x => (x.GetType() == typeof(Button)) && ((x as Button).Active == false))
+                                .Where(x => (x as Button).yRelative == cActive.yRelative && (x as Button).xRelative < cActive.xRelative)
+                                .OrderBy(x => (x as Button).xRelative)
+                                .LastOrDefault() as Button);
+                            break;
+                        case Directions.Right:
+                            target = (Elements.Where(x => (x.GetType() == typeof(Button)) && ((x as Button).Active == false))
+                                .Where(x => (x as Button).yRelative == cActive.yRelative && (x as Button).xRelative > cActive.xRelative)
+                                .OrderBy(x => (x as Button).xRelative)
+                                .FirstOrDefault() as Button);
+                            break;
+                        case Directions.Down:
+                            target = (Elements.Where(x => (x.GetType() == typeof(Button)) && ((x as Button).Active == false))
+                                .Where(x => (x as Button).xRelative == cActive.xRelative && (x as Button).yRelative > cActive.yRelative)
+                                .OrderBy(x => (x as Button).xRelative)
+                                .FirstOrDefault() as Button);
+                            break;
+                        case Directions.Up:
+                            target = (Elements.Where(x => (x.GetType() == typeof(Button)) && ((x as Button).Active == false))
+                                .Where(x => (x as Button).xRelative == cActive.xRelative && (x as Button).yRelative < cActive.yRelative)
+                                .OrderBy(x => (x as Button).xRelative)
+                                .LastOrDefault() as Button);
+                            break;
+                    }
+                    if (target != null)
+                    {
+                        target.Active = true;
+                        cActive.Active = false;
+                    }
+                }
+            }
+        }
+    }
+
 
     class Border : BaseObject
     {
@@ -29,7 +140,7 @@ namespace KekAttack
             Random rnd = new Random();
             switch (rnd.Next(1, 3))
             {
-                case 1: 
+                case 1:
                     Sprite = (char)Sprites.Box1;
                     break;
                 case 2:
@@ -44,7 +155,7 @@ namespace KekAttack
 
             if (this.Create(posX, posY) != Types.Empty)
             {
-                throw new Exception("Failed to create box");
+                throw new CreateBoxException();
             }
         }
 
@@ -56,7 +167,14 @@ namespace KekAttack
 
             if (this.Create(posX, posY) != Types.Empty)
             {
-                throw new Exception("Failed to create box");
+                throw new CreateBoxException();
+            }
+        }
+
+        public class CreateBoxException : Exception
+        {
+            public CreateBoxException()
+            {
             }
         }
     }

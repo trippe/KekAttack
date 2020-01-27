@@ -50,6 +50,6 @@ namespace KekAttack
         Player = 0,
         PlayerJump = -150,
         PlayerRecover = -50,
-        Box = -500
+        Box = -300
     }
 }
